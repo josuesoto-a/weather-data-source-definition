@@ -18,7 +18,7 @@ https://api.open-meteo.com/v1/forecast?latitude=9.93&longitude=-84.08&current_we
 Data is updated every 60 minutes (hourly), based on the latest runs of global meteorological models.
 ## Data format 
 JSON
-## Potencial use cases
+## Potencial Use Cases
 Smart Agriculture: Automation of irrigation systems based on rainfall probability and soil temperature.
 Logistics and Transportation: Optimization of delivery routes to avoid storms or dangerous wind conditions.
 Energy Management: Production forecasting for solar farms (using radiation data) or wind farms.

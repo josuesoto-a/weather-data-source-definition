@@ -7,7 +7,7 @@ Open-Meteo
 REST API
 HTTP GET 
 ## Example  Request
-`https://open-meteo.com`
+https://api.open-meteo.com/v1/forecast?latitude=9.93&longitude=-84.08&current_weather=true
 ## Data Fields
 -time: Report time.
 -temperature: Temperature in °C.

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env
+
+# Data
+data/raw/
+data/processed/
+data/processed/*
+*.json
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+logs/

@@ -40,11 +40,10 @@ DATA_DIR = os.path.join(
     "data"
 )
 
-CLEAN_FILE = os.path.join(
+PROCESSED_DIR = os.path.join(
     BASE_DIR,
     "data",
-    "processed",
-    "clean_weather_data.json"
+    "processed"
 )
 
 # --------------------------------------------------
@@ -62,7 +61,6 @@ def get_latest_raw_file(data_dir):
     if not files:
         return None
 
-    # Ordenar por nombre (timestamp)
     files.sort(reverse=True)
 
     latest_file = files[0]
@@ -73,14 +71,32 @@ def get_latest_raw_file(data_dir):
     )
 
 # --------------------------------------------------
+# FUNCIÓN PARA GENERAR NOMBRE DINÁMICO
+# --------------------------------------------------
+
+def generate_clean_filename(raw_file):
+
+    filename = os.path.basename(raw_file)
+
+    timestamp = filename.replace(
+        "weather_data_",
+        ""
+    )
+
+    clean_filename = f"clean_weather_data_{timestamp}"
+
+    return os.path.join(
+        PROCESSED_DIR,
+        clean_filename
+    )
+
+# --------------------------------------------------
 # FUNCIÓN PRINCIPAL
 # --------------------------------------------------
 
 def clean_data():
 
     logging.info("Clean script started")
-
-    # 1 — Encontrar el archivo más reciente
 
     raw_file = get_latest_raw_file(DATA_DIR)
 
@@ -94,8 +110,6 @@ def clean_data():
     logging.info(
         f"Processing latest file: {raw_file}"
     )
-
-    # 2 — Leer JSON
 
     try:
 
@@ -121,8 +135,6 @@ def clean_data():
 
         return
 
-    # 3 — Validar estructura
-
     if "current_weather" not in data:
 
         logging.error(
@@ -138,8 +150,6 @@ def clean_data():
         return
 
     weather = data["current_weather"]
-
-    # 4 — Transformar datos
 
     cleaned_data = {}
 
@@ -179,10 +189,8 @@ def clean_data():
         "Data transformation completed"
     )
 
-    # 5 — Crear carpeta processed
-
     os.makedirs(
-        os.path.dirname(CLEAN_FILE),
+        PROCESSED_DIR,
         exist_ok=True
     )
 
@@ -190,12 +198,14 @@ def clean_data():
         "Processed directory verified"
     )
 
-    # 6 — Guardar archivo limpio
+    clean_file = generate_clean_filename(
+        raw_file
+    )
 
     try:
 
         with open(
-            CLEAN_FILE,
+            clean_file,
             "w",
             encoding="utf-8"
         ) as file:
@@ -208,12 +218,12 @@ def clean_data():
             )
 
         logging.info(
-            f"Cleaned data saved to {CLEAN_FILE}"
+            f"Cleaned data saved to {clean_file}"
         )
 
         print(
             "Cleaned data saved to:",
-            CLEAN_FILE
+            clean_file
         )
 
     except Exception as e:
@@ -230,9 +240,6 @@ def clean_data():
         "Clean script finished"
     )
 
-# --------------------------------------------------
-# ENTRY POINT
-# --------------------------------------------------
 
 if __name__ == "__main__":
 

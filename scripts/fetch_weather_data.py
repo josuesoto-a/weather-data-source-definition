@@ -4,6 +4,10 @@ from datetime import datetime
 import os
 import logging
 
+# --------------------------------------------------
+# CONFIGURACIÓN API
+# --------------------------------------------------
+
 URL = "https://api.open-meteo.com/v1/forecast"
 
 params = {
@@ -13,7 +17,7 @@ params = {
 }
 
 # --------------------------------------------------
-# Definir directorio raíz del proyecto
+# BASE DIRECTORY DEL PROYECTO
 # --------------------------------------------------
 
 BASE_DIR = os.path.dirname(
@@ -23,26 +27,20 @@ BASE_DIR = os.path.dirname(
 )
 
 # --------------------------------------------------
-# Definir carpeta logs dentro del proyecto
+# CONFIGURACIÓN DE LOGGING
 # --------------------------------------------------
 
 logs_dir = os.path.join(BASE_DIR, "logs")
 
-# --------------------------------------------------
-# Crear carpeta logs si no existe
-# --------------------------------------------------
+os.makedirs(
+    logs_dir,
+    exist_ok=True
+)
 
-os.makedirs(logs_dir, exist_ok=True)
-
-# --------------------------------------------------
-# Definir archivo de log
-# --------------------------------------------------
-
-log_file = os.path.join(logs_dir, "pipeline.log")
-
-# --------------------------------------------------
-# Configurar logging
-# --------------------------------------------------
+log_file = os.path.join(
+    logs_dir,
+    "pipeline.log"
+)
 
 logging.basicConfig(
     filename=log_file,
@@ -50,52 +48,100 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+# --------------------------------------------------
+# DIRECTORIO DATA
+# --------------------------------------------------
+
+DATA_DIR = os.path.join(
+    BASE_DIR,
+    "data"
+)
+
+os.makedirs(
+    DATA_DIR,
+    exist_ok=True
+)
+
+# --------------------------------------------------
+# FUNCIÓN PRINCIPAL
+# --------------------------------------------------
+
 def fetch_weather_data():
 
-    logging.info("Fetch weather data script started")
+    logging.info(
+        "Fetch script started"
+    )
 
     try:
 
-        logging.info("Sending request to weather API")
+        logging.info(
+            "Sending request to weather API"
+        )
 
-        response = requests.get(URL, params=params)
+        response = requests.get(
+            URL,
+            params=params,
+            timeout=10
+        )
 
-        if response.status_code == 200:
+        response.raise_for_status()
 
-            logging.info("API request successful")
+        logging.info(
+            "API request successful"
+        )
 
-            data = response.json()
+        data = response.json()
 
-            timestamp = datetime.now().strftime(
-                "%Y-%m-%d_%H-%M-%S"
+        timestamp = datetime.now().strftime(
+            "%Y-%m-%d_%H-%M-%S"
+        )
+
+        filename = os.path.join(
+            DATA_DIR,
+            f"weather_data_{timestamp}.json"
+        )
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                data,
+                file,
+                indent=4,
+                ensure_ascii=False
             )
 
-            data_dir = os.path.join(BASE_DIR, "data")
+        logging.info(
+            f"Data saved successfully to {filename}"
+        )
 
-            os.makedirs(data_dir, exist_ok=True)
+        print(
+            "Data saved to:",
+            filename
+        )
 
-            filename = os.path.join(
-                data_dir,
-                f"weather_data_{timestamp}.json"
-            )
+    except requests.exceptions.Timeout:
 
-            with open(filename, "w") as file:
-                json.dump(data, file, indent=4)
+        logging.error(
+            "Request timed out"
+        )
 
-            logging.info(
-                f"Data saved successfully to {filename}"
-            )
+        print(
+            "Request timed out"
+        )
 
-            print("Data saved to:", filename)
+    except requests.exceptions.HTTPError as e:
 
-        else:
+        logging.error(
+            f"HTTP error occurred: {e}"
+        )
 
-            logging.error(
-                f"Request failed with status code {response.status_code}"
-            )
-
-            print("Request failed")
-            print("Status code:", response.status_code)
+        print(
+            "HTTP error occurred"
+        )
 
     except Exception as e:
 
@@ -103,10 +149,20 @@ def fetch_weather_data():
             f"Unexpected error occurred: {e}"
         )
 
-        print("An unexpected error occurred:", e)
+        print(
+            "Unexpected error occurred:",
+            e
+        )
 
-    logging.info("Fetch weather data script finished")
+    logging.info(
+        "Fetch script finished"
+    )
 
+
+# --------------------------------------------------
+# ENTRY POINT
+# --------------------------------------------------
 
 if __name__ == "__main__":
+
     fetch_weather_data()
